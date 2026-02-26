@@ -23,7 +23,7 @@ enum GameState {
 
 enum GameResult {
     NOT_DETERMINED,
-    TEAM_0_WINS,  // Most humans or zombies on team 0
+    TEAM_0_WINS, // Most humans or zombies on team 0
     TEAM_1_WINS,
     TEAM_2_WINS,
     TEAM_3_WINS,
@@ -120,10 +120,8 @@ contract GameManager {
 
         // If all teams are full, auto-start the game
         if (
-            teamPlayers[0].length == PLAYERS_PER_TEAM &&
-            teamPlayers[1].length == PLAYERS_PER_TEAM &&
-            teamPlayers[2].length == PLAYERS_PER_TEAM &&
-            teamPlayers[3].length == PLAYERS_PER_TEAM
+            teamPlayers[0].length == PLAYERS_PER_TEAM && teamPlayers[1].length == PLAYERS_PER_TEAM
+                && teamPlayers[2].length == PLAYERS_PER_TEAM && teamPlayers[3].length == PLAYERS_PER_TEAM
         ) {
             _startGame(currentGameId);
         }
@@ -132,10 +130,8 @@ contract GameManager {
     // Start the game (must have all 64 players registered)
     function startGame() external {
         require(
-            teamPlayers[0].length == PLAYERS_PER_TEAM &&
-            teamPlayers[1].length == PLAYERS_PER_TEAM &&
-            teamPlayers[2].length == PLAYERS_PER_TEAM &&
-            teamPlayers[3].length == PLAYERS_PER_TEAM,
+            teamPlayers[0].length == PLAYERS_PER_TEAM && teamPlayers[1].length == PLAYERS_PER_TEAM
+                && teamPlayers[2].length == PLAYERS_PER_TEAM && teamPlayers[3].length == PLAYERS_PER_TEAM,
             "Not all teams are full"
         );
 
@@ -249,23 +245,20 @@ contract GameManager {
     }
 
     // Get game details
-    function getGameDetails(uint256 _gameId) external view returns (
-        GameState state,
-        GameResult result,
-        uint256 startTime,
-        uint256 endTime,
-        uint256 playerCount,
-        bool cardsDealt
-    ) {
+    function getGameDetails(uint256 _gameId)
+        external
+        view
+        returns (
+            GameState state,
+            GameResult result,
+            uint256 startTime,
+            uint256 endTime,
+            uint256 playerCount,
+            bool cardsDealt
+        )
+    {
         Game storage game = games[_gameId];
-        return (
-            game.state,
-            game.result,
-            game.startTime,
-            game.endTime,
-            game.players.length,
-            game.cardsDealt
-        );
+        return (game.state, game.result, game.startTime, game.endTime, game.players.length, game.cardsDealt);
     }
 
     // Get team player count
@@ -286,12 +279,11 @@ contract GameManager {
     }
 
     // Get winning condition status for current game
-    function getGameStatus() external view returns (
-        uint256 totalHumans,
-        uint256 totalZombies,
-        uint256 totalEliminated,
-        bool zombiesWinning
-    ) {
+    function getGameStatus()
+        external
+        view
+        returns (uint256 totalHumans, uint256 totalZombies, uint256 totalEliminated, bool zombiesWinning)
+    {
         totalHumans = playerRegistry.countPlayersByStatus(PlayerStatus.HUMAN);
         totalZombies = playerRegistry.countPlayersByStatus(PlayerStatus.ZOMBIE);
         totalEliminated = playerRegistry.countPlayersByStatus(PlayerStatus.ELIMINATED);
@@ -300,11 +292,11 @@ contract GameManager {
     }
 
     // Get team status (human/zombie/eliminated count)
-    function getTeamStatus(uint256 _team) external view returns (
-        uint256 humanCount,
-        uint256 zombieCount,
-        uint256 eliminatedCount
-    ) {
+    function getTeamStatus(uint256 _team)
+        external
+        view
+        returns (uint256 humanCount, uint256 zombieCount, uint256 eliminatedCount)
+    {
         require(_team < NUM_TEAMS, "Invalid team");
 
         humanCount = playerRegistry.countTeamPlayersByStatus(_team, PlayerStatus.HUMAN);
@@ -328,8 +320,8 @@ contract GameManager {
     function isPlayerGameOver(address _player) external view returns (bool, string memory) {
         // GAME OVER if zombie and eliminated by shotgun
         if (
-            playerRegistry.getPlayerStatus(_player) == PlayerStatus.ELIMINATED &&
-            playerRegistry.getPlayerStatus(_player) == PlayerStatus.ZOMBIE
+            playerRegistry.getPlayerStatus(_player) == PlayerStatus.ELIMINATED
+                && playerRegistry.getPlayerStatus(_player) == PlayerStatus.ZOMBIE
         ) {
             return (true, "Zombie eliminated by shotgun");
         }

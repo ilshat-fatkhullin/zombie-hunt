@@ -26,7 +26,7 @@ struct Player {
 contract PlayerRegistry {
     mapping(address => Player) public players;
     address[] public registeredPlayers;
-    
+
     // Events
     event PlayerRegistered(address indexed player, uint256 team);
     event PlayerStatusChanged(address indexed player, PlayerStatus newStatus);
@@ -51,12 +51,7 @@ contract PlayerRegistry {
         require(_player != address(0), "Invalid player address");
 
         players[_player] = Player({
-            playerAddress: _player,
-            team: _team,
-            status: PlayerStatus.HUMAN,
-            cardCount: 7,
-            score: 0,
-            isRegistered: true
+            playerAddress: _player, team: _team, status: PlayerStatus.HUMAN, cardCount: 7, score: 0, isRegistered: true
         });
 
         registeredPlayers.push(_player);
@@ -66,7 +61,7 @@ contract PlayerRegistry {
     // Update player status (HUMAN, ZOMBIE, ELIMINATED)
     function updatePlayerStatus(address _player, PlayerStatus _status) external playerExists(_player) {
         require(_status != PlayerStatus.ELIMINATED, "Use eliminatePlayer() for elimination");
-        
+
         players[_player].status = _status;
         emit PlayerStatusChanged(_player, _status);
     }
@@ -74,7 +69,7 @@ contract PlayerRegistry {
     // Eliminate a player (GAME OVER condition)
     function eliminatePlayer(address _player) external playerExists(_player) {
         require(players[_player].status != PlayerStatus.ELIMINATED, "Player already eliminated");
-        
+
         players[_player].status = PlayerStatus.ELIMINATED;
         emit PlayerEliminated(_player);
     }
@@ -82,7 +77,7 @@ contract PlayerRegistry {
     // Update card count
     function updateCardCount(address _player, uint256 _cardCount) external playerExists(_player) {
         require(_cardCount <= 52, "Card count exceeds deck size");
-        
+
         players[_player].cardCount = _cardCount;
         emit CardCountUpdated(_player, _cardCount);
     }
@@ -98,7 +93,10 @@ contract PlayerRegistry {
         return players[_player].status;
     }
 
-    function getPlayerInfo(address _player) external view playerExists(_player) 
+    function getPlayerInfo(address _player)
+        external
+        view
+        playerExists(_player)
         returns (
             address playerAddress,
             uint256 team,
@@ -106,7 +104,7 @@ contract PlayerRegistry {
             uint256 cardCount,
             uint256 score,
             bool isRegistered
-        ) 
+        )
     {
         Player memory player = players[_player];
         return (player.playerAddress, player.team, player.status, player.cardCount, player.score, player.isRegistered);
@@ -168,7 +166,12 @@ contract PlayerRegistry {
     }
 
     // Count alive/zombie/eliminated players in a team
-    function countTeamPlayersByStatus(uint256 _team, PlayerStatus _status) external view validTeam(_team) returns (uint256) {
+    function countTeamPlayersByStatus(uint256 _team, PlayerStatus _status)
+        external
+        view
+        validTeam(_team)
+        returns (uint256)
+    {
         uint256 count = 0;
         for (uint256 i = 0; i < registeredPlayers.length; i++) {
             address player = registeredPlayers[i];

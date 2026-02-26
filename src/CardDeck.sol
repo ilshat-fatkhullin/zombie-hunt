@@ -9,10 +9,10 @@ Ensures only valid cards are played:
 - Verify card validity for each player
 */
 enum CardType {
-    NUMBER,      // Regular numbered cards (1-10)
-    ZOMBIE,      // Trumps all cards, infects loser
-    SHOTGUN,     // Eliminates zombies
-    VACCINE      // Cancels out zombie card
+    NUMBER, // Regular numbered cards (1-10)
+    ZOMBIE, // Trumps all cards, infects loser
+    SHOTGUN, // Eliminates zombies
+    VACCINE // Cancels out zombie card
 }
 
 enum CardSuit {
@@ -25,24 +25,24 @@ enum CardSuit {
 struct Card {
     CardType cardType;
     CardSuit suit;
-    uint8 number;      // 1-10 for NUMBER cards, 0 for special cards
+    uint8 number; // 1-10 for NUMBER cards, 0 for special cards
 }
 
 contract CardDeck {
     // Player's card inventory: player address => array of card indices
     mapping(address => uint256[]) public playerCards;
-    
+
     // Card details: card index => Card
     mapping(uint256 => Card) public cardDetails;
-    
+
     // Tracks all cards by index
     uint256 private cardCounter = 0;
-    
+
     // Special card tracking
     mapping(address => bool) public hasZombieCard;
     mapping(address => bool) public hasShotgunCard;
     mapping(address => uint256[]) public vaccineCards;
-    
+
     // Events
     event CardDealt(address indexed player, uint256 cardIndex);
     event CardTransferred(address indexed from, address indexed to, uint256 cardIndex);
@@ -53,11 +53,7 @@ contract CardDeck {
 
     // Create a card
     function _createCard(CardType _type, CardSuit _suit, uint8 _number) private returns (uint256) {
-        cardDetails[cardCounter] = Card({
-            cardType: _type,
-            suit: _suit,
-            number: _number
-        });
+        cardDetails[cardCounter] = Card({cardType: _type, suit: _suit, number: _number});
         uint256 cardIndex = cardCounter;
         cardCounter++;
         return cardIndex;
@@ -154,25 +150,29 @@ contract CardDeck {
     }
 
     // Validate card placement (must be NUMBER type and valid suit match)
-    function validateCardPlacement(address _player, uint256 _cardIndex, CardSuit _requiredSuit) external view returns (bool) {
+    function validateCardPlacement(address _player, uint256 _cardIndex, CardSuit _requiredSuit)
+        external
+        view
+        returns (bool)
+    {
         uint256[] memory cards = playerCards[_player];
         bool cardExists = false;
-        
+
         for (uint256 i = 0; i < cards.length; i++) {
             if (cards[i] == _cardIndex) {
                 cardExists = true;
                 break;
             }
         }
-        
+
         if (!cardExists) return false;
-        
+
         Card memory card = cardDetails[_cardIndex];
-        
+
         // Card must be a NUMBER card and match required suit
         if (card.cardType != CardType.NUMBER) return false;
         if (card.suit != _requiredSuit) return false;
-        
+
         return true;
     }
 

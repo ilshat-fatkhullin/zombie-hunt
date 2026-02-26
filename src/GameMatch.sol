@@ -14,11 +14,11 @@ Handles individual game logic and calls dependent contracts for validation:
 */
 
 enum MatchState {
-    PENDING,      // Waiting for both players
-    SUIT_CHOSEN,  // Initial suit has been chosen
+    PENDING, // Waiting for both players
+    SUIT_CHOSEN, // Initial suit has been chosen
     CARDS_PLAYED, // Both players have played cards
-    COMPLETED,    // Match finished
-    CANCELLED     // Match cancelled
+    COMPLETED, // Match finished
+    CANCELLED // Match cancelled
 }
 
 struct MatchRound {
@@ -53,7 +53,9 @@ contract GameMatch {
     event SuitChosen(uint256 indexed matchId, CardSuit suit);
     event CardPlayed(uint256 indexed matchId, address indexed player, uint256 cardIndex, uint8 cardNumber);
     event MatchCompleted(uint256 indexed matchId, address indexed winner, address indexed loser);
-    event CardTransferredToWinner(uint256 indexed matchId, address indexed winner, address indexed loser, uint256 cardIndex);
+    event CardTransferredToWinner(
+        uint256 indexed matchId, address indexed winner, address indexed loser, uint256 cardIndex
+    );
     event MatchCancelled(uint256 indexed matchId);
 
     constructor(address _playerRegistry, address _cardDeck, address _specialCards) {
@@ -67,10 +69,16 @@ contract GameMatch {
         require(playerRegistry.isPlayerRegistered(_player1), "Player 1 not registered");
         require(playerRegistry.isPlayerRegistered(_player2), "Player 2 not registered");
         require(_player1 != _player2, "Cannot play against yourself");
-        
+
         // Check players are not already in a match
-        require(matches[playerCurrentMatch[_player1]].state == MatchState.COMPLETED || playerCurrentMatch[_player1] == 0, "Player 1 already in match");
-        require(matches[playerCurrentMatch[_player2]].state == MatchState.COMPLETED || playerCurrentMatch[_player2] == 0, "Player 2 already in match");
+        require(
+            matches[playerCurrentMatch[_player1]].state == MatchState.COMPLETED || playerCurrentMatch[_player1] == 0,
+            "Player 1 already in match"
+        );
+        require(
+            matches[playerCurrentMatch[_player2]].state == MatchState.COMPLETED || playerCurrentMatch[_player2] == 0,
+            "Player 2 already in match"
+        );
 
         // Check players are not eliminated
         require(playerRegistry.getPlayerStatus(_player1) != PlayerStatus.ELIMINATED, "Player 1 is eliminated");
@@ -107,7 +115,7 @@ contract GameMatch {
     // Play a card in the match (can be called by either player)
     function playCard(uint256 _matchId, address _player, uint256 _cardIndex) external {
         MatchRound storage matchRound = matches[_matchId];
-        
+
         require(matchRound.state != MatchState.COMPLETED, "Match already completed");
         require(matchRound.state != MatchState.CANCELLED, "Match is cancelled");
         require(matchRound.player1 == _player || matchRound.player2 == _player, "Player not in this match");
@@ -116,12 +124,15 @@ contract GameMatch {
         // If this is the first card played, it determines the suit
         if (matchRound.state == MatchState.PENDING) {
             matchRound.state = MatchState.SUIT_CHOSEN;
-            (, CardSuit cardSuit, ) = cardDeck.cardDetails(_cardIndex);
+            (, CardSuit cardSuit,) = cardDeck.cardDetails(_cardIndex);
             matchRound.requiredSuit = cardSuit;
         }
 
         // Validate card placement (must match suit)
-        require(cardDeck.validateCardPlacement(_player, _cardIndex, matchRound.requiredSuit), "Card does not match required suit");
+        require(
+            cardDeck.validateCardPlacement(_player, _cardIndex, matchRound.requiredSuit),
+            "Card does not match required suit"
+        );
 
         // Get card details
         (CardType cardType,, uint8 number) = cardDeck.getCardDetails(_cardIndex);
@@ -212,14 +223,18 @@ contract GameMatch {
     }
 
     // Get match details
-    function getMatchDetails(uint256 _matchId) external view returns (
-        address player1,
-        address player2,
-        uint8 player1CardNumber,
-        uint8 player2CardNumber,
-        address winner,
-        MatchState state
-    ) {
+    function getMatchDetails(uint256 _matchId)
+        external
+        view
+        returns (
+            address player1,
+            address player2,
+            uint8 player1CardNumber,
+            uint8 player2CardNumber,
+            address winner,
+            MatchState state
+        )
+    {
         MatchRound storage matchRound = matches[_matchId];
         return (
             matchRound.player1,
@@ -252,7 +267,7 @@ contract GameMatch {
         uint256 total = 0;
 
         for (uint256 i = 0; i < cards.length; i++) {
-            (CardType cardType, , uint8 number) = cardDeck.getCardDetails(cards[i]);
+            (CardType cardType,, uint8 number) = cardDeck.getCardDetails(cards[i]);
             if (cardType == CardType.NUMBER) {
                 total += number;
             }

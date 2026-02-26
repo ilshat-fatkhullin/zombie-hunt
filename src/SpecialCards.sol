@@ -17,7 +17,7 @@ contract SpecialCards {
 
     // Track if zombie card has been used this round
     mapping(address => bool) public zombieCardUsedThisRound;
-    
+
     // Track if vaccine has been used on a specific zombie
     mapping(address => mapping(address => bool)) public vaccineUsed; // vaccine user => zombie => used
 
@@ -47,7 +47,7 @@ contract SpecialCards {
 
         // Victim cannot be from a different team... actually, wait, let me re-read the rules
         // Actually, the zombie card just infects the loser of the game, doesn't matter team
-        
+
         emit ZombieCardPlayed(_zombie, _victim);
 
         // Infect the victim
@@ -78,15 +78,11 @@ contract SpecialCards {
         require(cardDeck.hasShotgun(_shooter), "Player does not have shotgun card");
 
         // Only effective against zombies
-        require(
-            playerRegistry.getPlayerStatus(_zombie) == PlayerStatus.ZOMBIE,
-            "Shotgun only works on zombies"
-        );
+        require(playerRegistry.getPlayerStatus(_zombie) == PlayerStatus.ZOMBIE, "Shotgun only works on zombies");
 
         // Cannot eliminate already eliminated players
         require(
-            playerRegistry.getPlayerStatus(_shooter) != PlayerStatus.ELIMINATED,
-            "Eliminated players cannot use shotgun"
+            playerRegistry.getPlayerStatus(_shooter) != PlayerStatus.ELIMINATED, "Eliminated players cannot use shotgun"
         );
 
         emit ShotgunCardUsed(_shooter, _zombie);
@@ -121,22 +117,15 @@ contract SpecialCards {
         require(hasVaccine, "Player does not have this vaccine card");
 
         // Can only be used on zombies
-        require(
-            playerRegistry.getPlayerStatus(_zombie) == PlayerStatus.ZOMBIE,
-            "Vaccine only works on zombies"
-        );
+        require(playerRegistry.getPlayerStatus(_zombie) == PlayerStatus.ZOMBIE, "Vaccine only works on zombies");
 
         // Cannot use vaccine on already eliminated players
         require(
-            playerRegistry.getPlayerStatus(_zombie) != PlayerStatus.ELIMINATED,
-            "Cannot vaccinate eliminated player"
+            playerRegistry.getPlayerStatus(_zombie) != PlayerStatus.ELIMINATED, "Cannot vaccinate eliminated player"
         );
 
         // Prevent using same vaccine twice on same zombie
-        require(
-            !vaccineUsed[_vaccineUser][_zombie],
-            "Vaccine already used on this zombie"
-        );
+        require(!vaccineUsed[_vaccineUser][_zombie], "Vaccine already used on this zombie");
 
         emit VaccineCardUsed(_vaccineUser, _zombie);
 
@@ -169,21 +158,19 @@ contract SpecialCards {
 
     // Validate special card use - returns true if action is valid
     function validateZombieCardUse(address _zombie) external view returns (bool) {
-        return playerRegistry.isPlayerRegistered(_zombie) && cardDeck.hasZombie(_zombie) && !zombieCardUsedThisRound[_zombie];
+        return
+            playerRegistry.isPlayerRegistered(_zombie) && cardDeck.hasZombie(_zombie)
+                && !zombieCardUsedThisRound[_zombie];
     }
 
     function validateShotgunCardUse(address _shooter, address _zombie) external view returns (bool) {
-        return playerRegistry.isPlayerRegistered(_shooter) && 
-               playerRegistry.isPlayerRegistered(_zombie) && 
-               cardDeck.hasShotgun(_shooter) &&
-               playerRegistry.getPlayerStatus(_zombie) == PlayerStatus.ZOMBIE;
+        return playerRegistry.isPlayerRegistered(_shooter) && playerRegistry.isPlayerRegistered(_zombie)
+            && cardDeck.hasShotgun(_shooter) && playerRegistry.getPlayerStatus(_zombie) == PlayerStatus.ZOMBIE;
     }
 
     function validateVaccineCardUse(address _vaccineUser, address _zombie) external view returns (bool) {
-        return _vaccineUser != _zombie &&
-               playerRegistry.isPlayerRegistered(_vaccineUser) && 
-               playerRegistry.isPlayerRegistered(_zombie) &&
-               playerRegistry.getPlayerStatus(_zombie) == PlayerStatus.ZOMBIE &&
-               !vaccineUsed[_vaccineUser][_zombie];
+        return _vaccineUser != _zombie && playerRegistry.isPlayerRegistered(_vaccineUser)
+            && playerRegistry.isPlayerRegistered(_zombie)
+            && playerRegistry.getPlayerStatus(_zombie) == PlayerStatus.ZOMBIE && !vaccineUsed[_vaccineUser][_zombie];
     }
 }
